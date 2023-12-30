@@ -22,11 +22,12 @@ async def startup_event():
 
 @app.get("/")
 async def root():
-    result = await sender.copy(channel_id="2092585408")
+    # result = await sender.copy(channel_id="2092585408")
+    #
+    # result = [MessageToSend(i) for i in result]
+    # await sender.paste(channel_id="2013085137", messages=result)
 
-    result = [MessageToSend(i) for i in result]
-    await sender.paste(channel_id="2013085137", messages=result)
-    return
+    return {"text": "in development T-T"}
 
 
 @app.get("/hello/{name}")
