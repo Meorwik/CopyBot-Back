@@ -15,15 +15,21 @@ app.include_router(api_router, prefix=settings.API_STR)
 sender = Sender()
 
 
+@app.on_event("startup")
+async def startup_event():
+    await sender.init()
+
+
 @app.get("/")
 async def root():
-    result = await sender.copy(channel_id=2092585408)
+    result = await sender.copy(channel_id="2092585408")
+
     result = [MessageToSend(i) for i in result]
-    await sender.paste(channel_id=2013085137, messages=result)
+    await sender.paste(channel_id="2013085137", messages=result)
+    return
 
 
 @app.get("/hello/{name}")
 async def say_hello(name: str):
     return {"message": f"Hello {name}"}
-
 
