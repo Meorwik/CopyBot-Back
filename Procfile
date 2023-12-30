@@ -1,1 +1,1 @@
-web: python3 -m uvicorn main --reload
+web: uvicorn main --host 0.0.0.0 --port 8000
