@@ -1,9 +1,11 @@
-from sender.app.services.parser import MessageParser
-from sender.app.schemas.models import MessageToSend
+from loader import sender, postgres_manager, scheduler, message_transformer
+from sender.app.memory.relational.postgresql import Redirects
 from sender.app.api.api import api_router
-from sender.app.config.bot import Sender
-from fastapi import FastAPI
 from settings import settings
+from fastapi import FastAPI
+from telethon import events
+from typing import List
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -12,25 +14,44 @@ app = FastAPI(
 )
 
 app.include_router(api_router, prefix=settings.API_STR)
-sender = Sender()
+
+
+async def check_updates():
+    redirects: List[Redirects] = await postgres_manager.get_all_redirects()
+    if redirects:
+        copy_from = [await sender.convert_id_to_entity(redirect[0].copy_from) for redirect in redirects]
+        await sender.connect_to_bot()
+
+        @sender.bot.on(events.NewMessage(chats=copy_from))
+        async def handle_updates(event: events.NewMessage.Event):
+            for redirect in redirects:
+                if str(event.chat.id) == str(redirect[0].copy_from):
+                    message_to_send = await message_transformer.transform_to_current_model([event.message])
+                    await sender.paste(redirect[0].copy_to, message_to_send)
+
+    else:
+        return False
 
 
 @app.on_event("startup")
 async def startup_event():
+    await postgres_manager.init()
+    await scheduler.start()
     await sender.init()
+
+    """
+    Every 2 hours program will check PostgresDatabase for new redirects
+    """
+
+    scheduler.add_job(check_updates, "interval")
 
 
 @app.get("/")
 async def root():
-    # result = await sender.copy(channel_id="2092585408")
-    #
-    # result = [MessageToSend(i) for i in result]
-    # await sender.paste(channel_id="2013085137", messages=result)
+    return {
+        str(key + 1): str(value)
+        for key, value
+        in enumerate(await postgres_manager.get_all_redirects())
+    }
 
-    return {"text": "in development T-T"}
-
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
 
