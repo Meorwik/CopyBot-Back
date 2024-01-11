@@ -4,7 +4,6 @@ from ..schemas.models import MessageToSend
 from telethon import TelegramClient
 from settings import settings
 from typing import Union
-import asyncio
 
 
 class BotManager:
@@ -28,7 +27,11 @@ class BotManager:
         )
 
     async def init(self):
-        self.__bot = await self.bot.start()
+        if settings.BOT_PHONE_NUMBER is not None:
+            self.__bot = await self.bot.start(phone=settings.BOT_PHONE_NUMBER)
+
+        else:
+            self.__bot = await self.bot.start()
 
     @property
     def bot(self):
