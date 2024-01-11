@@ -12,8 +12,8 @@ class Scheduler:
     def __init__(self):
         self.__engine = AsyncIOScheduler()
 
-    def add_job(self, job, trigger: str, hours: int = 1):
-        self.__engine.add_job(job, trigger=trigger, hours=hours)
+    def add_job(self, job, trigger: str, hours: int = 10):
+        self.__engine.add_job(job, trigger=trigger, seconds=hours)
 
     async def start(self):
         self.__engine.start()
