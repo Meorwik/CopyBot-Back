@@ -5,13 +5,7 @@ description = "My Python project"
 authors = ["John Doe <<EMAIL>>"]
 license = "MIT"
 
-[build]
-frontend = "npm install"
-backend = "python setup.py install"
-
-[env]
-PYTHON_VERSION = "3.11.4"
-
+NIXPACKS_PYTHON_VERSION = "3.11"
 
 [tool.poetry.dependencies]
 python = "^3.11.4"
