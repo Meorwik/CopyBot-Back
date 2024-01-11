@@ -10,8 +10,6 @@ API_HASH: str = environ.get("API_HASH")
 TG_USERNAME: str = environ.get("TG_USERNAME")
 
 POSTGRES_URL: Final[str] = environ.get("POSTGRES_URL")
-PHONE_NUMBER: Final[str] = environ.get("PHONE_NUMBER")
-BOT_PASSWORD: Final[str] = environ.get("BOT_PASSWORD")
 
 
 class Settings:
@@ -22,8 +20,6 @@ class Settings:
     DEBUG_MODE: bool = DEBUG_ON
     TG_USERNAME: str = TG_USERNAME
     POSTGRES_ENGINE: AsyncEngine = create_async_engine(POSTGRES_URL)
-    BOT_PHONE_NUMBER: str = PHONE_NUMBER
-    BOT_PASSWORD: str = BOT_PASSWORD
 
 
 settings = Settings()

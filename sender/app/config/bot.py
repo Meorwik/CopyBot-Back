@@ -27,11 +27,7 @@ class BotManager:
         )
 
     async def init(self):
-        if settings.BOT_PHONE_NUMBER is not None:
-            self.__bot = await self.bot.start(phone=settings.BOT_PHONE_NUMBER, password=settings.BOT_PASSWORD)
-
-        else:
-            self.__bot = await self.bot.start()
+        self.__bot = await self.bot.start()
 
     @property
     def bot(self):
