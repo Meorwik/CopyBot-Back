@@ -9,7 +9,7 @@ class MessageTransformer:
 
     __current_model = MessageToSend
 
-    async def transform_to_current_model(self, messages: list[Message]) -> list[__current_model]:
+    async def transform_to_current_model(self, messages: list[Message]) -> list:
         transformed_messages = [
             self.__current_model(
                 base_message=message,
