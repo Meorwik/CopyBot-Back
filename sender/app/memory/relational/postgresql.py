@@ -9,10 +9,13 @@ class Redirects(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     copy_from = Column(String, nullable=False)
+    copy_from_name = Column(String, nullable=False)
+    copy_to_name = Column(String, nullable=False)
     copy_to = Column(String, nullable=False)
+    
 
     def __repr__(self):
-        return f"RedirectObject - ([{self.copy_from}] --> [{self.copy_to}])"
+        return f"Перенаправление из [({self.copy_from_name}) - ({self.copy_from})] в [({self.copy_to_name}) - ({self.copy_to})] "
 
 
 class PostgresManager(DatabaseManager):
@@ -45,7 +48,9 @@ class PostgresManager(DatabaseManager):
         async with self.Session() as session:
             query = update(Redirects).where(Redirects.id == redirect_id).values(
                 copy_from=redirect.copy_from,
-                copy_to=redirect.copy_to
+                copy_to=redirect.copy_to,
+                copy_from_name=redirect.copy_from_name,
+                copy_to_name=redirect.copy_to_name
             )
             await session.execute(query)
             await session.commit()
