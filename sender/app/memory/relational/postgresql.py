@@ -12,7 +12,6 @@ class Redirects(Base):
     copy_from_name = Column(String, nullable=False)
     copy_to_name = Column(String, nullable=False)
     copy_to = Column(String, nullable=False)
-    
 
     def __repr__(self):
         return f"Перенаправление из [({self.copy_from_name}) - ({self.copy_from})] в [({self.copy_to_name}) - ({self.copy_to})] "

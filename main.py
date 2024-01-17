@@ -19,7 +19,7 @@ app.include_router(api_router, prefix=settings.API_STR)
 async def check_updates():
     redirects: List[Redirects] = await postgres_manager.get_all_redirects()
     if redirects:
-        copy_from = [await sender.convert_id_to_entity(redirect[0].copy_from) for redirect in redirects]
+        copy_from = [await sender.convert_id_to_peer(redirect[0].copy_from) for redirect in redirects]
         await sender.connect_to_bot()
 
         @sender.bot.on(events.NewMessage(chats=copy_from))
@@ -40,7 +40,7 @@ async def startup_event():
     await sender.init()
 
     """
-    Every 2 hours program will check PostgresDatabase for new redirects
+    Every 15 minutes program will check PostgresDatabase for new redirects
     """
 
     scheduler.add_job(check_updates, "interval")

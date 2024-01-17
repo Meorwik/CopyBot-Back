@@ -7,10 +7,23 @@ router = APIRouter()
 DEFAULT_SERVER_ERROR_CASE_RESPONSE = {"code": 500}
 
 
+async def create_redirect(copy_from: Union[int, str], copy_to: Union[int, str]) -> Redirects:
+    from loader import sender
+    copy_from_name = await sender.get_chat_name(copy_from)
+    copy_to_name = await sender.get_chat_name(copy_to)
+    redirect = Redirects(
+        copy_from=str(copy_from),
+        copy_to=str(copy_to),
+        copy_to_name=copy_to_name,
+        copy_from_name=copy_from_name
+    )
+    return redirect
+
+
 @router.post('/add_redirect/{copy_from}_{copy_to}')
 async def add_redirect(copy_from: Union[int, str], copy_to: Union[int, str]) -> dict:
     from loader import postgres_manager
-    redirect = Redirects(copy_from=str(copy_from), copy_to=str(copy_to))
+    redirect = await create_redirect(copy_from, copy_to)
 
     if await postgres_manager.add_redirect(redirect):
         return {
@@ -38,8 +51,8 @@ async def remove_redirect(redirect_id: int) -> dict:
 @router.post('/update_redirect/{redirect_id}_{copy_from}_{copy_to}')
 async def update_redirect(redirect_id: int, copy_from: Union[int, str], copy_to: Union[int, str]) -> dict:
     from loader import postgres_manager
+    redirect = await create_redirect(copy_from, copy_to)
 
-    redirect = Redirects(copy_from=str(copy_from), copy_to=str(copy_to))
     if await postgres_manager.update_redirect(redirect_id, redirect):
         return {
             "code": 200,

@@ -61,13 +61,20 @@ class Sender:
     def bot(self):
         return self.__bot
 
-    async def convert_id_to_entity(self, chat_id: Union[int, str]) -> TypeInputPeer:
+    async def convert_id_to_peer(self, chat_id: Union[int, str]) -> TypeInputPeer:
         chat_id: int = int(chat_id)
         return await self.__bot.get_input_entity(chat_id)
 
+    async def get_chat_name(self, chat: Union[TypeInputPeer, str, int]) -> str:
+        if isinstance(chat, Union[int, str]):
+            chat = await self.convert_id_to_peer(chat)
+
+        chat = await self.__bot.get_entity(chat)
+        return chat.title
+
     async def paste(self, chat_id: Union[str, int], messages: list[MessageToSend]):
         successfully_sent: int = 0
-        chat: TypeInputPeer = await self.convert_id_to_entity(chat_id)
+        chat: TypeInputPeer = await self.convert_id_to_peer(chat_id)
         await self.connect_to_bot()
         for message in messages:
             if message.photo is not None:
@@ -83,7 +90,7 @@ class Sender:
     async def copy(self, chat_id: Union[str, int], **kwargs: dict[str: Union[str, int]]) -> list[Message]:
         parser = MessageParser(self.__bot)
         await self.connect_to_bot()
-        chat: TypeInputPeer = await self.convert_id_to_entity(chat_id)
+        chat: TypeInputPeer = await self.convert_id_to_peer(chat_id)
         messages: list[Message] = await parser.parse_chat(chat, kwargs=kwargs)
         await self.disconnect_from_bot()
         return messages
