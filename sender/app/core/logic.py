@@ -1,3 +1,4 @@
+from telethon.types import MessageMediaWebPage
 from ..schemas.models import MessageToSend
 from telethon.types import Message
 
@@ -16,7 +17,10 @@ class MessageTransformer:
                 text=message.message,
                 photo=message.media.photo
             )
-            if message.media is not None and message.media.photo is not None else
+            if message.media is not None
+               and not isinstance(message.media, MessageMediaWebPage)
+               and message.media.photo is not None
+            else
             self.__current_model(
                 base_message=message,
                 text=message.message,
