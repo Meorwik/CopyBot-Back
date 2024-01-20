@@ -29,6 +29,14 @@ class BotManager:
     async def init(self):
         self.__bot = await self.bot.start()
 
+    async def connect_to_bot(self):
+        if not self.__bot.is_connected():
+            await self.__bot.connect()
+
+    async def disconnect_from_bot(self):
+        await self.__bot.disconnect()
+
+
     @property
     def bot(self):
         return self.__bot
@@ -47,19 +55,27 @@ class Sender:
         self.__bot_manager = BotManager()
         self.__bot = self.__bot_manager.bot
 
+    @property
+    def bot(self):
+        return self.__bot
+
     async def init(self):
         await self.__bot_manager.init()
 
     async def connect_to_bot(self):
-        if not self.__bot.is_connected():
-            await self.__bot.connect()
+        await self.__bot_manager.connect_to_bot()
 
     async def disconnect_from_bot(self):
-        await self.__bot.disconnect()
+        await self.__bot_manager.disconnect_from_bot()
 
-    @property
-    def bot(self):
-        return self.__bot
+    async def is_valid_chat(self, chat_id: Union[str, int]) -> bool:
+        try:
+            peer = await self.convert_id_to_peer(chat_id)
+            chat = await self.__bot.get_entity(peer)
+            return bool(chat)
+
+        except Exception:
+            return False
 
     async def convert_id_to_peer(self, chat_id: Union[int, str]) -> TypeInputPeer:
         chat_id: int = int(chat_id)
@@ -72,7 +88,7 @@ class Sender:
         chat = await self.__bot.get_entity(chat)
         return chat.title
 
-    async def paste(self, chat_id: Union[str, int], messages: list[MessageToSend]):
+    async def paste(self, chat_id: Union[str, int], messages: list[MessageToSend]) -> bool:
         successfully_sent: int = 0
         chat: TypeInputPeer = await self.convert_id_to_peer(chat_id)
         await self.connect_to_bot()

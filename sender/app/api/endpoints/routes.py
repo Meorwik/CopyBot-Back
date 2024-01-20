@@ -1,10 +1,10 @@
 from sender.app.memory.relational.postgresql import Redirects
+from typing import Union, List, Dict
 from fastapi import APIRouter
-from typing import Union, List
 
 router = APIRouter()
 
-DEFAULT_SERVER_ERROR_CASE_RESPONSE = {"code": 500}
+DEFAULT_SERVER_ERROR_CASE_RESPONSE = {"code": 500, "info": False}
 
 
 async def create_redirect(copy_from: Union[int, str], copy_to: Union[int, str]) -> Redirects:
@@ -21,7 +21,7 @@ async def create_redirect(copy_from: Union[int, str], copy_to: Union[int, str]) 
 
 
 @router.post('/add_redirect/{copy_from}_{copy_to}')
-async def add_redirect(copy_from: Union[int, str], copy_to: Union[int, str]) -> dict:
+async def add_redirect(copy_from: Union[int, str], copy_to: Union[int, str]) -> Dict:
     from loader import postgres_manager
     redirect = await create_redirect(copy_from, copy_to)
 
@@ -36,7 +36,7 @@ async def add_redirect(copy_from: Union[int, str], copy_to: Union[int, str]) -> 
 
 
 @router.post('/remove_redirect/{redirect_id}')
-async def remove_redirect(redirect_id: int) -> dict:
+async def remove_redirect(redirect_id: int) -> Dict:
     from loader import postgres_manager
     if await postgres_manager.remove_redirect(redirect_id):
         return {
@@ -49,7 +49,7 @@ async def remove_redirect(redirect_id: int) -> dict:
 
 
 @router.post('/update_redirect/{redirect_id}_{copy_from}_{copy_to}')
-async def update_redirect(redirect_id: int, copy_from: Union[int, str], copy_to: Union[int, str]) -> dict:
+async def update_redirect(redirect_id: int, copy_from: Union[int, str], copy_to: Union[int, str]) -> Dict:
     from loader import postgres_manager
     redirect = await create_redirect(copy_from, copy_to)
 
@@ -64,7 +64,7 @@ async def update_redirect(redirect_id: int, copy_from: Union[int, str], copy_to:
 
 
 @router.post('/get_all_redirects')
-async def get_all_redirects() -> dict:
+async def get_all_redirects() -> Dict:
     from loader import postgres_manager
     redirects: List[Redirects] = await postgres_manager.get_all_redirects()
     if redirects:
@@ -78,7 +78,7 @@ async def get_all_redirects() -> dict:
 
 
 @router.post('/remove_all_redirects')
-async def remove_all_redirects() -> dict:
+async def remove_all_redirects() -> Dict:
     from loader import postgres_manager
     if await postgres_manager.remove_all_redirects():
         return {
@@ -91,7 +91,7 @@ async def remove_all_redirects() -> dict:
 
 
 @router.post('/copy_history/{copy_from}_{copy_to}')
-async def copy_history(copy_from: Union[int, str], copy_to: Union[str, int]) -> dict:
+async def copy_history(copy_from: Union[int, str], copy_to: Union[str, int]) -> Dict:
     from loader import sender, message_transformer
 
     messages = await sender.copy(copy_from, limit=1000)
@@ -100,6 +100,20 @@ async def copy_history(copy_from: Union[int, str], copy_to: Union[str, int]) -> 
         return {
             "code": 200,
             "info": "success"
+        }
+
+    else:
+        return DEFAULT_SERVER_ERROR_CASE_RESPONSE
+
+
+@router.post('/validate/{chat_id}')
+async def validate_chat_id(chat_id: Union[str, int]) -> Dict:
+    from loader import sender
+
+    if await sender.is_valid_chat(chat_id):
+        return {
+            "code": 200,
+            "info": True
         }
 
     else:
