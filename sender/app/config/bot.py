@@ -36,7 +36,6 @@ class BotManager:
     async def disconnect_from_bot(self):
         await self.__bot.disconnect()
 
-
     @property
     def bot(self):
         return self.__bot
