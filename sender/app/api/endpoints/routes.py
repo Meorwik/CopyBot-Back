@@ -9,20 +9,74 @@ DEFAULT_SERVER_ERROR_CASE_RESPONSE = {"code": 500, "info": False}
 
 async def create_redirect(copy_from: Union[int, str], copy_to: Union[int, str]) -> Redirects:
     from loader import sender
-    copy_from_name = await sender.get_chat_name(copy_from)
-    copy_to_name = await sender.get_chat_name(copy_to)
-    redirect = Redirects(
-        copy_from=str(copy_from),
-        copy_to=str(copy_to),
-        copy_to_name=copy_to_name,
-        copy_from_name=copy_from_name
-    )
+    if isinstance(copy_from, int) and isinstance(copy_to, int):
+        copy_from_name = await sender.get_chat_name(copy_from)
+        copy_to_name = await sender.get_chat_name(copy_to)
+        redirect = Redirects(
+            copy_from=str(copy_from),
+            copy_to=str(copy_to),
+            copy_to_name=copy_to_name,
+            copy_from_name=copy_from_name
+        )
+
+    else:
+        if isinstance(copy_from, str) and isinstance(copy_to, str):
+            channel_copy_from = sender.bot.get_entity(copy_from)
+            channel_copy_to = sender.bot.get_entity(copy_to)
+
+            redirect = Redirects(
+                copy_from=channel_copy_from.id,
+                copy_to=channel_copy_to.id,
+                copy_to_name=channel_copy_to.title,
+                copy_from_name=channel_copy_from.title
+            )
+
+        elif isinstance(copy_from, str):
+            channel_copy_from = sender.bot.get_entity(copy_from)
+            copy_to_name = await sender.get_chat_name(copy_to)
+            redirect = Redirects(
+                copy_from=channel_copy_from.id,
+                copy_to=str(copy_to),
+                copy_to_name=copy_to_name,
+                copy_from_name=channel_copy_from.title
+            )
+
+        elif isinstance(copy_to, str):
+            channel_copy_to = sender.bot.get_entity(copy_to)
+            copy_from_name = await sender.get_chat_name(copy_to)
+            redirect = Redirects(
+                copy_from=str(copy_from),
+                copy_to=channel_copy_to.id,
+                copy_to_name=channel_copy_to.title,
+                copy_from_name=copy_from_name
+            )
+
+        else:
+            redirect = None
+
     return redirect
 
 
 @router.post('/add_redirect/{copy_from}_{copy_to}')
 async def add_redirect(copy_from: Union[int, str], copy_to: Union[int, str]) -> Dict:
     from loader import postgres_manager
+
+    try:
+        copy_from = int(copy_from)
+    except ValueError:
+        """
+        Means that chat name was passed, not ID
+        """
+        ...
+
+    try:
+        copy_to = int(copy_to)
+    except ValueError:
+        """
+        Means that chat name was passed, not ID
+        """
+        ...
+
     redirect = await create_redirect(copy_from, copy_to)
 
     if await postgres_manager.add_redirect(redirect):

@@ -74,7 +74,8 @@ class Sender:
             return bool(chat)
 
         except Exception:
-            return False
+            chat = await self.__bot.get_entity(chat_id)
+            return bool(chat)
 
     async def convert_id_to_peer(self, chat_id: Union[int, str]) -> TypeInputPeer:
         chat_id: int = int(chat_id)
