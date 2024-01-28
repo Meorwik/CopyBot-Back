@@ -68,12 +68,10 @@ class Sender:
         await self.__bot_manager.disconnect_from_bot()
 
     async def is_valid_chat(self, chat_id: Union[str, int]) -> bool:
-        try:
-            chat_id = await self.convert_id_to_peer(chat_id)
-        except Exception as e:
-            print(e)
-
-        chat = await self.__bot.get_entity(chat_id)
+        if "@" in chat_id:
+            return True
+        peer = await self.convert_id_to_peer(chat_id)
+        chat = await self.__bot.get_entity(peer)
         return bool(chat)
 
     async def convert_id_to_peer(self, chat_id: Union[int, str]) -> TypeInputPeer:
