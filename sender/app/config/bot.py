@@ -69,13 +69,12 @@ class Sender:
 
     async def is_valid_chat(self, chat_id: Union[str, int]) -> bool:
         try:
-            peer = await self.convert_id_to_peer(chat_id)
-            chat = await self.__bot.get_entity(peer)
-            return bool(chat)
+            chat_id = await self.convert_id_to_peer(chat_id)
+        except Exception as e:
+            print(e)
 
-        except Exception:
-            chat = await self.__bot.get_entity(chat_id)
-            return bool(chat)
+        chat = await self.__bot.get_entity(chat_id)
+        return bool(chat)
 
     async def convert_id_to_peer(self, chat_id: Union[int, str]) -> TypeInputPeer:
         chat_id: int = int(chat_id)
