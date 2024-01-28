@@ -21,8 +21,8 @@ async def create_redirect(copy_from: Union[int, str], copy_to: Union[int, str]) 
 
     else:
         if isinstance(copy_from, str) and isinstance(copy_to, str):
-            channel_copy_from = sender.bot.get_entity(copy_from)
-            channel_copy_to = sender.bot.get_entity(copy_to)
+            channel_copy_from = await sender.bot.get_entity(copy_from)
+            channel_copy_to = await sender.bot.get_entity(copy_to)
 
             redirect = Redirects(
                 copy_from=channel_copy_from.id,
@@ -32,7 +32,7 @@ async def create_redirect(copy_from: Union[int, str], copy_to: Union[int, str]) 
             )
 
         elif isinstance(copy_from, str):
-            channel_copy_from = sender.bot.get_entity(copy_from)
+            channel_copy_from = await sender.bot.get_entity(copy_from)
             copy_to_name = await sender.get_chat_name(copy_to)
             redirect = Redirects(
                 copy_from=channel_copy_from.id,
@@ -42,7 +42,7 @@ async def create_redirect(copy_from: Union[int, str], copy_to: Union[int, str]) 
             )
 
         elif isinstance(copy_to, str):
-            channel_copy_to = sender.bot.get_entity(copy_to)
+            channel_copy_to = await sender.bot.get_entity(copy_to)
             copy_from_name = await sender.get_chat_name(copy_to)
             redirect = Redirects(
                 copy_from=str(copy_from),
