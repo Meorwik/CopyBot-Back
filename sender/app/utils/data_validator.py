@@ -29,3 +29,37 @@ class InputValidator:
 
         return response
 
+    async def __validate_chat_id(self, chat_id: Union[str, int]) -> bool:
+        from loader import sender
+
+        if isinstance(chat_id, str):
+            if chat_id.isnumeric():
+                chat_id = int(chat_id)
+            else:
+                return False
+
+        is_successful: bool = False
+        tries_left: int = 6
+
+        while is_successful is not True or tries_left != 0:
+            try:
+                peer = await sender.convert_id_to_peer(chat_id)
+                chat = await sender.bot.get_entity(peer)
+                is_successful: bool = bool(chat)
+
+            except ValueError:
+                tries_left -= 1
+        else:
+            return is_successful
+
+    async def __validate_chat_username(self, username: str) -> bool:
+        from loader import sender
+        return bool(await sender.bot.get_entity(username))
+
+    async def validate_chat(self, chat_hint: Union[str, int]) -> bool:
+        if await self.is_chat_username(chat_hint):
+            return await self.__validate_chat_username(chat_hint)
+
+        else:
+            return await self.__validate_chat_id(chat_hint)
+
