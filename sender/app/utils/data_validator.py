@@ -24,9 +24,8 @@ class InputValidator:
             response["chat_name"] = chat.title
 
         else:
-            chat = int(chat)
-            response["chat_id"] = chat
-            response["chat_name"] = await sender.get_chat_name(chat)
+            response["chat_id"] = str(chat)
+            response["chat_name"] = await sender.get_chat_name(int(chat))
 
         return response
 
