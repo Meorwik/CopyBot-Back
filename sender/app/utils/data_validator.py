@@ -10,7 +10,7 @@ class InputValidator:
         username = str(username)
         return username.startswith("@")
 
-    async def try_parse(self, chat: Union[str, int]) -> Union[int, str]:
+    async def try_parse(self, chat: Union[str, int]) -> Dict:
         from loader import sender
 
         response: Dict = {
@@ -20,7 +20,7 @@ class InputValidator:
 
         if await self.is_chat_username(chat):
             chat = await sender.bot.get_entity(chat)
-            response["chat_id"] = chat.id
+            response["chat_id"] = str(chat.id)
             response["chat_name"] = chat.title
 
         else:
