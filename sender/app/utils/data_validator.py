@@ -7,6 +7,7 @@ class InputValidator:
         return f"InputValidatorObject - ({id(self)})"
 
     async def is_chat_username(self, username: str) -> bool:
+        username = str(username)
         return username.startswith("@")
 
     async def try_parse(self, chat: Union[str, int]) -> Union[int, str]:
