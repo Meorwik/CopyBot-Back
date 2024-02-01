@@ -68,7 +68,7 @@ class Sender:
         await self.__bot_manager.disconnect_from_bot()
 
     async def convert_id_to_peer(self, chat_id: Union[int, str]) -> TypeInputPeer:
-        chat_id: int = int("-100" + chat_id)
+        chat_id: int = int("-100" + str(chat_id))
         return await self.__bot.get_input_entity(chat_id)
 
     async def get_chat_name(self, chat: Union[TypeInputPeer, str, int]) -> str:
