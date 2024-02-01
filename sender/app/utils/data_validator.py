@@ -38,19 +38,9 @@ class InputValidator:
             else:
                 return False
 
-        is_successful: bool = False
-        tries_left: int = 6
-
-        while is_successful is not True or tries_left != 0:
-            try:
-                peer = await sender.convert_id_to_peer(chat_id)
-                chat = await sender.bot.get_entity(peer)
-                is_successful: bool = bool(chat)
-
-            except ValueError:
-                tries_left -= 1
-        else:
-            return is_successful
+        peer = await sender.convert_id_to_peer(chat_id)
+        chat = await sender.bot.get_entity(peer)
+        return bool(chat)
 
     async def __validate_chat_username(self, username: str) -> bool:
         from loader import sender
