@@ -13,7 +13,6 @@ class MessageTransformer:
     async def transform_to_current_model(self, messages: list[Message]) -> list:
         transformed_messages = [
             self.__current_model(
-                base_message=message,
                 text=message.message,
                 photo=message.media.photo
             )
@@ -22,7 +21,6 @@ class MessageTransformer:
                and message.media.photo is not None
             else
             self.__current_model(
-                base_message=message,
                 text=message.message,
             )
             for message in messages

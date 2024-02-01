@@ -1,3 +1,5 @@
+import os
+
 from sender.app.services.parsers.message_parser import MessageParser
 from telethon.types import Message, TypeInputPeer
 from ..schemas.models import MessageToSend
@@ -84,7 +86,9 @@ class Sender:
         await self.connect_to_bot()
         for message in messages:
             if message.photo is not None:
-                await self.__bot.send_file(chat, message.photo, caption=message.text)
+                file = await self.__bot.download_media(message.photo)
+                await self.__bot.send_file(chat, file, caption=message.text)
+                os.remove(file)
 
             else:
                 await self.__bot.send_message(chat, message.text)

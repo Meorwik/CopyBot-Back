@@ -98,6 +98,7 @@ async def copy_history(copy_from: Union[int, str], copy_to: Union[str, int]) -> 
 
     messages = await sender.copy(copy_from["chat_id"], limit=1000)
     messages_to_send = await message_transformer.transform_to_current_model(messages)
+
     if await sender.paste(copy_to["chat_id"], messages_to_send):
         return DEFAULT_SUCCESS_RESPONSE
 
