@@ -1,11 +1,10 @@
-import os
-
 from sender.app.services.parsers.message_parser import MessageParser
 from telethon.types import Message, TypeInputPeer
 from ..schemas.models import MessageToSend
 from telethon import TelegramClient
 from settings import settings
 from typing import Union
+import os
 
 
 class BotManager:
@@ -19,14 +18,16 @@ class BotManager:
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'instance'):
             cls.instance = super(BotManager, cls).__new__(cls)
+        print(cls.instance)
         return cls.instance
 
     def __init__(self):
-        self.__bot = TelegramClient(
-            session=settings.TG_USERNAME,
-            api_id=settings.API_ID,
-            api_hash=settings.API_HASH,
-        )
+        if not hasattr(self, "__bot"):
+            self.__bot = TelegramClient(
+                session=settings.TG_USERNAME,
+                api_id=settings.API_ID,
+                api_hash=settings.API_HASH,
+            )
 
     async def init(self):
         self.__bot = await self.bot.start()
@@ -40,6 +41,7 @@ class BotManager:
 
     @property
     def bot(self):
+        print(self.__bot)
         return self.__bot
 
 
@@ -82,13 +84,17 @@ class Sender:
 
     async def paste(self, chat_id: Union[str, int], messages: list[MessageToSend]) -> bool:
         successfully_sent: int = 0
-        chat: TypeInputPeer = await self.convert_id_to_peer(chat_id)
         await self.connect_to_bot()
+        chat: TypeInputPeer = await self.convert_id_to_peer(chat_id)
         for message in messages:
-            if message.photo is not None:
-                file = await self.__bot.download_media(message.photo)
-                await self.__bot.send_file(chat, file, caption=message.text)
-                os.remove(file)
+            if message.media is not None:
+                try:
+                    file = await self.__bot.download_media(message.media)
+                    await self.__bot.send_file(chat, file, caption=message.text)
+                    os.remove(file)
+
+                except Exception as e:
+                    print(f"{e}")
 
             else:
                 await self.__bot.send_message(chat, message.text)
