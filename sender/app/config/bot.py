@@ -92,16 +92,17 @@ class Sender:
                     file = await self.__bot.download_media(message.media)
                     await self.__bot.send_file(chat, file, caption=message.text)
                     os.remove(file)
+                    successfully_sent += 1
 
                 except Exception as e:
                     print(f"{e}")
 
             else:
                 await self.__bot.send_message(chat, message.text)
-            successfully_sent += 1
+                successfully_sent += 1
 
         await self.disconnect_from_bot()
-        return True if successfully_sent > len(messages) - 5 else False
+        return successfully_sent > (len(messages) - 5)
 
     async def copy(self, chat_id: Union[str, int], **kwargs: dict[str: Union[str, int]]) -> list[Message]:
         parser = MessageParser(self.__bot)
