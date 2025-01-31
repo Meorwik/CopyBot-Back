@@ -1,5 +1,6 @@
 from loader import sender, postgres_manager, scheduler, message_transformer
 from sender.app.memory.relational.postgresql import Redirects
+from sender.app.schemas.models import MessageToSend
 from sender.app.api.api import api_router
 from settings import settings
 from fastapi import FastAPI
@@ -25,9 +26,39 @@ async def check_updates():
         @sender.bot.on(events.NewMessage(chats=copy_from))
         async def handle_updates(event: events.NewMessage.Event):
             for redirect in redirects:
+                messages_to_send = []
+
                 if str(event.chat.id) == str(redirect[0].copy_from):
-                    message_to_send = await message_transformer.transform_to_current_model([event.message])
-                    await sender.paste(redirect[0].copy_to, message_to_send)
+
+                    if event.message.reply_to is not None:
+                        message_with_reply = await sender.bot.get_messages(
+                            event.chat.id, ids=event.message.reply_to.reply_to_msg_id
+                        )
+                        copied_messages = await sender.copy(redirect[0].copy_to)
+
+                        for message in copied_messages:
+                            if message_with_reply.message == message.message:
+                                if message.message == "" or message.message is None:
+
+                                    messages_to_send.extend(
+                                        await message_transformer.transform_to_current_model([event.message]))
+                                    break
+
+                                else:
+                                    messages_to_send.append(
+                                        MessageToSend(
+                                            text=event.message.message,
+                                            media=event.message.media,
+                                            reply_to=str(message.id)
+                                        )
+                                    )
+
+                    else:
+                        messages_to_send.extend(await message_transformer.transform_to_current_model([event.message]))
+
+                    await sender.paste(redirect[0].copy_to, messages_to_send)
+
+            await sender.disconnect_from_bot()
 
     else:
         return False
@@ -38,7 +69,7 @@ async def startup_event():
     await postgres_manager.init()
     await scheduler.start()
     await sender.init()
-    scheduler.add_job(check_updates, "interval", seconds=10)
+    scheduler.add_job(check_updates, "interval", seconds=5)
 
 
 @app.get("/")

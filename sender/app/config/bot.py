@@ -1,9 +1,11 @@
 from sender.app.services.parsers.message_parser import MessageParser
-from telethon.types import Message, TypeInputPeer
+from telethon.types import Message, TypeInputPeer, MessageMediaPhoto
 from ..schemas.models import MessageToSend
 from telethon import TelegramClient
 from settings import settings
 from typing import Union
+from PIL import Image
+from time import sleep
 import os
 
 
@@ -89,8 +91,35 @@ class Sender:
         for message in messages:
             if message.media is not None:
                 try:
-                    file = await self.__bot.download_media(message.media)
-                    await self.__bot.send_file(chat, file, caption=message.text)
+                    if isinstance(message.media, MessageMediaPhoto):
+                        file = await self.__bot.download_media(message.media, "sender/temp_memory/media")
+                        base_image = Image.open(file)
+                        base_image = base_image.convert("RGB")
+                        watermark = Image.open("sender/app/watermark.png")
+                        watermark = watermark.resize((500, 500))
+                        width, height = base_image.size
+                        transparent = Image.new('RGB', (width, height), (0, 0, 0, 0))
+                        transparent.paste(base_image, (0, 0))
+                        transparent.paste(watermark, (20, 20), mask=watermark)
+                        transparent.save(file)
+
+                    else:
+                        file = await self.__bot.download_media(message.media)
+
+                    if "voice=True" in str(message.media):
+                        if message.reply_to is not None:
+                            await self.__bot.send_file(chat, file, voice_note=True, reply_to=message.reply_to)
+
+                        else:
+                            await self.__bot.send_file(chat, file, voice_note=True)
+
+                    else:
+                        if message.reply_to is not None:
+                            await self.__bot.send_file(chat, file, caption=message.text, reply_to=message.reply_to)
+
+                        else:
+                            await self.__bot.send_file(chat, file, caption=message.text)
+
                     os.remove(file)
                     successfully_sent += 1
 
@@ -98,10 +127,13 @@ class Sender:
                     print(f"{e}")
 
             else:
-                await self.__bot.send_message(chat, message.text)
+                if message.reply_to is not None:
+                    await self.__bot.send_message(chat, message.text, reply_to=int(message.reply_to))
+
+                else:
+                    await self.__bot.send_message(chat, message.text)
                 successfully_sent += 1
 
-        await self.disconnect_from_bot()
         return successfully_sent > (len(messages) - 5)
 
     async def copy(self, chat_id: Union[str, int], **kwargs: dict[str: Union[str, int]]) -> list[Message]:
@@ -109,6 +141,5 @@ class Sender:
         await self.connect_to_bot()
         chat: TypeInputPeer = await self.convert_id_to_peer(chat_id)
         messages: list[Message] = await parser.parse_chat(chat, kwargs=kwargs)
-        await self.disconnect_from_bot()
         return messages
 
