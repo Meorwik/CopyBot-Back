@@ -25,5 +25,9 @@ class Settings:
     WATERMARK_REMOVER_TOKEN: str = WATERMARK_REMOVER_API_TOKEN
     TEMP_FOLDER_FOR_MEDIA: Final[str] = "sender/temp_memory/media"
 
+    REDIS_HOST: Final[str] = environ.get("REDIS_HOST")
+    REDIS_PORT: Final[int] = environ.get("REDIS_PORT")
+    REDIS_PASSWORD: Final[str] = environ.get("REDIS_PASSWORD")
+
 
 settings = Settings()

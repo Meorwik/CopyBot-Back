@@ -69,7 +69,7 @@ async def startup_event():
     await postgres_manager.init()
     await scheduler.start()
     await sender.init()
-    scheduler.add_job(check_updates, "interval", seconds=5)
+    scheduler.add_job(check_updates, "interval", seconds=240)
 
 
 @app.get("/")
